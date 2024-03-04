@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  Iluckhack\XhprofBuggregatorBundle\Tests\App\:
+    resource: '../src/'
+    exclude:
+      - '../src/Kernel.php'
+
+  xhprof_buggregator_bundle.profiler_storage_client:
+    class: Symfony\Component\HttpClient\MockHttpClient

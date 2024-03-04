@@ -1,0 +1,46 @@
+parameters:
+  env(XHPROF_BUGGREGATOR_APP_NAME): 'Symfony Application'
+  env(XHPROF_BUGGREGATOR_ENDPOINT): 'http://127.0.0.1:8000/api/profiler/store'
+  env(XHPROF_BUGGREGATOR_CLI_ENABLED): false
+  env(XHPROF_BUGGREGATOR_HTTP_ENABLED): false
+
+  xhprof_buggregator_bundle.app_name: '%env(string:XHPROF_BUGGREGATOR_APP_NAME)%'
+  xhprof_buggregator_bundle.endpoint: '%env(string:XHPROF_BUGGREGATOR_ENDPOINT)%'
+  xhprof_buggregator_bundle.cli_enabled: '%env(bool:XHPROF_BUGGREGATOR_CLI_ENABLED)%'
+  xhprof_buggregator_bundle.http_enabled: '%env(bool:XHPROF_BUGGREGATOR_HTTP_ENABLED)%'
+  xhprof_buggregator_bundle.http_enabled_header: '%env(default::XHPROF_BUGGREGATOR_HTTP_ENABLED_HEADER)%'
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  xhprof_buggregator_bundle.profiler_storage_client:
+    class: Symfony\Component\HttpClient\NativeHttpClient
+
+  xhprof_buggregator_bundle.profiler_storage:
+    class: SpiralPackages\Profiler\Storage\WebStorage
+    arguments:
+      $httpClient: '@xhprof_buggregator_bundle.profiler_storage_client'
+      $endpoint: '%xhprof_buggregator_bundle.endpoint%'
+
+  xhprof_buggregator_bundle.profiler:
+    class: SpiralPackages\Profiler\Profiler
+    arguments:
+      $storage: '@xhprof_buggregator_bundle.profiler_storage'
+      $driver: !service
+        factory: ['SpiralPackages\Profiler\DriverFactory', 'createXhrofDriver']
+      $appName: '%xhprof_buggregator_bundle.app_name%'
+
+  xhprof_buggregator_bundle.console_profiler_listener:
+    class: Iluckhack\XhprofBuggregatorBundle\EventListener\ConsoleProfilerListener
+    arguments:
+      $profiler: '@xhprof_buggregator_bundle.profiler'
+      $isEnabled: '%xhprof_buggregator_bundle.cli_enabled%'
+
+  xhprof_buggregator_bundle.request_profiler_listener:
+    class: Iluckhack\XhprofBuggregatorBundle\EventListener\RequestProfilerListener
+    arguments:
+      $profiler: '@xhprof_buggregator_bundle.profiler'
+      $isEnabled: '%xhprof_buggregator_bundle.http_enabled%'
+      $enabledHeader: '%xhprof_buggregator_bundle.http_enabled_header%'

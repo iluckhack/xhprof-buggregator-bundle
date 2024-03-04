@@ -1,0 +1,5 @@
+framework:
+    test: true
+    secret: '%env(APP_SECRET)%'
+    session:
+        storage_factory_id: session.storage.factory.mock_file

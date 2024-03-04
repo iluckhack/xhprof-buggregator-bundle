@@ -1,0 +1,5 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: Iluckhack\XhprofBuggregatorBundle\Tests\App\Controller
+    type: attribute
